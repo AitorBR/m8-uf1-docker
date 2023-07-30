@@ -1,0 +1,21 @@
+FROM debian
+LABEL M08 <m08@domini.cat>
+ENV HOME /root
+RUN apt-get update
+RUN apt-get install -y nano wget curl unzip lynx apache2 php7.4 libapache2-mod-php7.4 php7.4-mysql
+RUN echo "mysql-server mysql-server/root-password password root" | debconf-set-selections
+RUN echo "mysql-server mysql-server/root-password-again password root" | debconf-set-selections
+RUN apt-get install -y default-mysql-server
+ADD https://es.wordpress.org/wordpress-4.2.2-es_ES.zip /var/www/wordpress.zip
+ENV HOME /var/www/html/
+RUN rm -f /var/www/html/index.html
+RUN unzip /var/www/wordpress.zip -d /var/www/
+RUN cp -r /var/www/wordpress/* /var/www/html/
+RUN chown -R www-data:www-data /var/www/html/
+RUN rm /var/www/wordpress.zip
+RUN chmod -x ./script.sh
+ADD /script.sh /script.sh
+RUN ./script.sh
+EXPOSE 80
+CMD ["/bin/bash"]
+ENTRYPOINT ["./script.sh"]
